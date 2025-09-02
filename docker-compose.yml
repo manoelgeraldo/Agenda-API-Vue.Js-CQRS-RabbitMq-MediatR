@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Agenda.Api/Dockerfile
+    container_name: agenda-backend
+    environment:
+      - ConnectionStrings__Default=Data Source=/app/data/agenda.db
+      - ASPNETCORE_ENVIRONMENT=Production
+      - Jwt__Key=x1B#f7@T6qP9uZy3HkM2sVw8nC4rL7pQ
+      - Messaging__UseRabbitMQ=true
+      - RabbitMQ__Host=rabbitmq
+    volumes:
+      - ./data:/app/data
+    ports:
+      - "8080:8080"
+    depends_on:
+      - rabbitmq
+
+  frontend:
+    build:
+      context: ./Agenda.Web
+      dockerfile: Dockerfile
+    container_name: agenda-frontend
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+    - "5672:5672"
+    - "15672:15672"
